@@ -13,14 +13,42 @@ import {
 } from "@/components/ui/popover";
 import { ModeToggle } from "./ModeToggler";
 import { Link } from "react-router";
+import {  authApi, useLogoutMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api";
+import { useAppDispatch } from "@/redux/hook";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
+  { href: "/dashboard", label: "Dashboard" },
 ];
 
 export default function Navbar() {
+
+  const { data, isLoading, error } = useUserInfoQuery(undefined);
+  const [logout] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+
+
+  const onSubmit = async () => {
+    try {
+      const res = await logout(undefined).unwrap();
+      console.log('fulfilled', res)
+      dispatch(authApi.util.resetApiState())
+    } catch (error) {
+      console.error('rejected', error);
+    }
+  }
+
+
+  if (isLoading) {
+    return null
+  }
+  // console.log(data, "error:", error, isLoading);
+  // console.log(data?.data?.email);
+
+
+
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between gap-4">
@@ -98,12 +126,33 @@ export default function Navbar() {
           </div>
         </div>
         {/* Right side */}
-        <div className="flex items-center gap-2">
-          <ModeToggle />
-          <Button asChild className="text-sm">
-            <Link to="/login">Login</Link>
-          </Button>
-        </div>
+        {
+          data?.data ?
+            (
+              <div className="flex items-center gap-2">
+                <div className="w-[40px] h-[40px]">
+                  <img src={data.data.picture} alt={data.data.name} />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <ModeToggle />
+                  <Button variant="outline" className="text-sm outline" onClick={onSubmit}>
+                    Logout
+                  </Button>
+                </div>
+
+              </div>
+            )
+            :
+            (
+              <div className="flex items-center gap-2">
+                <ModeToggle />
+                <Button asChild className="text-sm">
+                  <Link to="/login">Login</Link>
+                </Button>
+              </div>
+            )
+        }
       </div>
     </header>
   );

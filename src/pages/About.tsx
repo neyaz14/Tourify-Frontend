@@ -1,3 +1,5 @@
+import Verify from "./Verify";
+
 export default function About() {
   return (
     <>
@@ -10,6 +12,8 @@ export default function About() {
           accusantium illum.
         </p>
       </div>
+
+      <Verify></Verify>
     </>
   );
 }

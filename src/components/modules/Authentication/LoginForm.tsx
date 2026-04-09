@@ -8,8 +8,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import config from "@/config";
 import { cn } from "@/lib/utils";
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
+// import { AxiosError } from "axios";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -25,12 +27,22 @@ export function LoginForm({
     try {
       const res = await login(data).unwrap();
       console.log(res);
+
+      if (!res.data.userInfo.isVerified) {
+        navigate("/verify", { state: res.data.userInfo.email });
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       console.error(err);
 
       if (err.status === 401) {
         toast.error("Your account is not verified");
         navigate("/verify", { state: data.email });
+      }
+      if (err.data.message === "Password incorrect") {
+        toast.error("Your Password is incorrect, try again !");
+
       }
     }
   };
@@ -95,13 +107,15 @@ export function LoginForm({
           </span>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full cursor-pointer"
-        >
-          Login with Google
-        </Button>
+        <Link to={`${config.baseUrl}/auth/google`}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full cursor-pointer"
+          >
+            Login with Google
+          </Button>
+        </Link>
       </div>
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
